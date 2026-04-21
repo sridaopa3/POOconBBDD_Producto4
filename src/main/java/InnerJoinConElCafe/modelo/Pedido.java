@@ -11,11 +11,19 @@ import jakarta.persistence.*;
 public class Pedido {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "numeroPedido")
     private int numeroPedido;
+     @Column(name = "cantidad")
     private int cantidad;
+         @Column(name = "fechaHora")
     private LocalDateTime fechaHora;
+
+    @ManyToOne
+    @JoinColumn(name = "cliente_nif", referencedColumnName = "nif")
     private Cliente cliente;
+
+    @ManyToOne
+    @JoinColumn(name = "articulo_codigo", referencedColumnName = "codigo")
     private Articulo articulo;
 
    //Constructor vacío para que se retornen los datos con Hibernate

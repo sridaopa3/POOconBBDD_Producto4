@@ -1,7 +1,16 @@
 package InnerJoinConElCafe.modelo;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+@Entity
+@DiscriminatorValue("Premium")
 public class ClientePremium extends Cliente {
 
+//Constructor vacío para crea el objeto con Hibernate
+    public ClientePremium() {
+        super();
+    }
 private static final double CUOTA_ANUAL = 30.0;
 private static final double DESCUENTO_ENVIO = 0.20;
 

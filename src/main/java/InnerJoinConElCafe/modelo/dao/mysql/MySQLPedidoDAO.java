@@ -2,14 +2,73 @@ package InnerJoinConElCafe.modelo.dao.mysql;
 
 import InnerJoinConElCafe.modelo.*;
 import InnerJoinConElCafe.modelo.dao.PedidoDAO;
-import InnerJoinConElCafe.modelo.dao.ConexionBD;
-import java.sql.*;
-import java.util.ArrayList;
+//import InnerJoinConElCafe.modelo.dao.ConexionBD;
+//import java.sql.*;
+//import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.Transaction;
 
 public class MySQLPedidoDAO implements PedidoDAO {
     
-    // SQL con JOIN para traer los datos del Cliente y del Artículo asociados al pedido
+    private static SessionFactory factory = new Configuration()
+            .configure("hibernate.cfg.xml")
+            .addAnnotatedClass(Articulo.class)
+            .addAnnotatedClass(Cliente.class)
+            .addAnnotatedClass(ClienteEstandar.class)
+            .addAnnotatedClass(ClientePremium.class)
+            .addAnnotatedClass(Pedido.class)
+            .buildSessionFactory();
+
+    @Override
+    public void insertar(Pedido p) throws Exception {
+    try (Session session = factory.openSession()) {
+        Transaction tx = session.beginTransaction();
+        try {
+            p.setNumeroPedido(0); 
+            Cliente clientePresente = session.get(Cliente.class, p.getCliente().getNif());
+            Articulo articuloPresente = session.get(Articulo.class, p.getArticulo().getCodigo());
+            p.setCliente(clientePresente);
+            p.setArticulo(articuloPresente);
+            session.persist(p); 
+            tx.commit();
+            System.out.println("¡Victoria! Pedido guardado en la base de datos.");
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        }
+        } catch (Exception e) {
+        e.printStackTrace(); // Esto nos dirá el pecado exacto en la consola
+        throw new Exception("Error al insertar pedido: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<Pedido> obtenerTodos() throws Exception {
+        try (Session session = factory.openSession()) {
+            return session.createQuery("from Pedido", Pedido.class).getResultList();
+        }
+    }
+
+    @Override
+    public void eliminar(Pedido p) throws Exception {
+        try (Session session = factory.openSession()) {
+            session.beginTransaction();
+            // Buscamos el pedido por su ID (numeroPedido) y lo borramos
+            Pedido pedidoABorrar = session.get(Pedido.class, p.getNumeroPedido());
+            if (pedidoABorrar != null) {
+                session.remove(pedidoABorrar);
+            }
+            session.getTransaction().commit();
+        }
+    }
+
+    @Override public void modificar(Pedido t) throws Exception {}
+    @Override public Pedido obtener(Integer id) throws Exception { return null; }
+}
+    /** // SQL con JOIN para traer los datos del Cliente y del Artículo asociados al pedido
     private final String GET_ALL = "SELECT p.*, a.descripcion, a.precioVenta, a.gastosEnvio, a.tiempoPreparacion, " +
                                    "c.nombre, c.domicilio, c.nif, c.tipo, c.email " +
                                    "FROM pedidos p " +
@@ -105,7 +164,4 @@ public class MySQLPedidoDAO implements PedidoDAO {
             }
         }
     }
-
-    @Override public void modificar(Pedido t) throws Exception {}
-    @Override public Pedido obtener(Integer id) throws Exception { return null; }
-}
+ */

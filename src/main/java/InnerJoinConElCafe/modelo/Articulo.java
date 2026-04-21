@@ -9,10 +9,13 @@ public class Articulo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int codigo;
-
+    @Column(name = "descripcion")
     private String descripcion;
+    @Column(name = "precioVenta")
     private double precioVenta;
+    @Column(name = "gastosEnvio")
     private double gastosEnvio;
+    @Column(name = "tiempoPreparacion")
     private int tiempoPreparacion;
 
       //Constructor vacío para que se retornen los datos con Hibernate

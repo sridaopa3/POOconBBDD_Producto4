@@ -3,15 +3,75 @@ package InnerJoinConElCafe.modelo.dao.mysql;
 import InnerJoinConElCafe.modelo.Cliente;
 import InnerJoinConElCafe.modelo.ClienteEstandar;
 import InnerJoinConElCafe.modelo.ClientePremium;
+//import InnerJoinConElCafe.modelo.ClienteEstandar;
+//import InnerJoinConElCafe.modelo.ClientePremium;
 import InnerJoinConElCafe.modelo.dao.ClienteDAO;
-import InnerJoinConElCafe.modelo.dao.ConexionBD;
-import java.sql.*;
-import java.util.ArrayList;
+//import InnerJoinConElCafe.modelo.dao.ConexionBD;
+//import java.sql.*;
+//import java.util.ArrayList;
 import java.util.List;
+import InnerJoinConElCafe.modelo.Articulo; 
+import InnerJoinConElCafe.modelo.Pedido;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 
 public class MySQLClienteDAO implements ClienteDAO {
 
-    private final String GET_ALL = "SELECT * FROM clientes";
+    private static SessionFactory factory = new Configuration()
+            .configure("hibernate.cfg.xml")
+            .addAnnotatedClass(Articulo.class)
+            .addAnnotatedClass(Cliente.class)
+            .addAnnotatedClass(Pedido.class)
+            .addAnnotatedClass(ClienteEstandar.class) 
+            .addAnnotatedClass(ClientePremium.class)
+            .buildSessionFactory();
+
+    @Override
+    public void insertar(Cliente c) throws Exception {
+        try (Session session = factory.openSession()) {
+            session.beginTransaction();
+            session.persist(c); 
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            throw new Exception("Error al insertar cliente con Hibernate: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<Cliente> obtenerTodos() throws Exception {
+        try (Session session = factory.openSession()) {
+            return session.createQuery("from Cliente", Cliente.class).getResultList();
+        } catch (Exception e) {
+            throw new Exception("Error al listar clientes con Hibernate: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Cliente obtener(String email) throws Exception {
+        try (Session session = factory.openSession()) {
+            return session.get(Cliente.class, email);
+        }
+    }
+
+    @Override public void modificar(Cliente t) throws Exception {
+        try (Session session = factory.openSession()) {
+            session.beginTransaction();
+            session.merge(t);
+            session.getTransaction().commit();
+        }
+    }
+
+    @Override public void eliminar(Cliente t) throws Exception {
+        try (Session session = factory.openSession()) {
+            session.beginTransaction();
+            Cliente cABorrar = session.get(Cliente.class, t.getEmail());
+            if (cABorrar != null) session.remove(cABorrar);
+            session.getTransaction().commit();
+        }
+    }
+
+    /**private final String GET_ALL = "SELECT * FROM clientes";
 
     @Override
     public void insertar(Cliente c) throws Exception {
@@ -64,5 +124,5 @@ public class MySQLClienteDAO implements ClienteDAO {
 
     @Override public void modificar(Cliente t) throws Exception {}
     @Override public void eliminar(Cliente t) throws Exception {}
-    @Override public Cliente obtener(String id) throws Exception { return null; }
+    @Override public Cliente obtener(String id) throws Exception { return null; } */
 }
